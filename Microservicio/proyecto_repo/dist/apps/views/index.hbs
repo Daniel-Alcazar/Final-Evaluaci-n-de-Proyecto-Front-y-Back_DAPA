@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRUD</title>
+    <style>
+        /* Estilos generales */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #3167a8; /* Cambio del color de fondo */
+            color: #c5c6c7; /* Cambio del color de las letras */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1, h2 {
+            margin: 20px 0;
+            color: #66fcf1; /* Cambio del color de las letras */
+            font-family: 'Arial', sans-serif;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        table {
+            border-collapse: collapse;
+            border-spacing: 0;
+            background-color: #2c3453; /* Cambio del color de fondo de la tabla */
+            margin-bottom: 20px; /* Agregado margen inferior */
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #66fcf1; /* Cambio del color del borde de las celdas */
+        }
+
+        th {
+            background-color: #45a29e; /* Cambio del color de fondo del encabezado */
+            color: #0b0c10; /* Cambio del color de las letras del encabezado */
+            text-transform: uppercase; /* Agregado */
+        }
+
+        /* Estilos de botones */
+        button {
+            background-color: #5e2bd6; /* Cambio del color de los botones */
+            color: white; /* Cambio del color de las letras */
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-family: 'Arial', sans-serif;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #45a29e; /* Cambio del color de los botones al pasar el ratón */
+        }
+
+        /* Estilos de campos de entrada */
+        input[type="text"],
+        input[type="email"],
+        input[type="password"] {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #66fcf1;
+            border-radius: 5px;
+            box-sizing: border-box;
+            background-color: #0b0c10;
+            color: #c5c6c7;
+            font-family: 'Arial', sans-serif;
+            font-size: 16px;
+        }
+
+        /* Estilos de botones de envío */
+        button[type="submit"] {
+            background-color: #66fcf1; /* Cambio del color de los botones de envío */
+            color: #0b0c10; /* Cambio del color de las letras */
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-family: 'Arial', sans-serif;
+            font-size: 16px;
+        }
+
+        button[type="submit"]:hover {
+            background-color: #45a29e; /* Cambio del color de los botones de envío al pasar el ratón */
+        }
+
+    </style>
+</head>
+<body>
+    <h1>{{ message }}</h1>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Usuario</th>
+                <th>Correo</th>
+                <th>        Opciones</th>
+            </tr>
+        </thead>
+        <tbody id="userTableBody">
+            {{#each users}}
+            <tr>
+                <td>{{ this.name }}</td>
+                <td>{{ this.email }}</td>
+                <td>
+                    <button onclick="openUpdateModal('{{ this.id }}', '{{ this.name }}', '{{ this.email }}')">Actualizar</button>
+                    <button onclick="openDeleteModal('{{ this.id }}')">Eliminar</button>
+                </td>
+            </tr>
+            {{/each}}
+        </tbody>
+    </table>
+
+    <button onclick="openCreateModal()">Crear Usuario</button>
+
+    <div id="createModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeCreateModal()">&times;</span>
+            <h2>Crear Usuario</h2>
+            <form id="createUserForm" onsubmit="createUser(event)">
+                <input type="text" id="name" name="name" placeholder="Nombre">
+                <input type="email" id="email" name="email" placeholder="Email">
+                <input type="password" id="password" name="password" placeholder="Contraseña">
+                <button type="submit">Crear</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="deleteModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeDeleteModal()">&times;</span>
+            <h2>Eliminar Usuario</h2>
+            <form id="deleteForm" onsubmit="deleteUser(); return false;">
+                <input type="hidden" id="deleteUserId" name="id">
+                <p>¿Estás seguro de que quieres eliminar este usuario?</p>
+                <button type="submit">Eliminar</button>
+            </form>
+        </div>
+    </div>
+
+    <div id="updateModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeUpdateModal()">&times;</span>
+            <h2>Actualizar Usuario</h2>
+            <form id="updateForm" onsubmit="updateUser(); return false;">
+                <input type="hidden" id="userId" name="id">
+                <input type="text" id="userName" name="name" placeholder="Nuevo Nombre">
+                <input type="email" id="userEmail" name="email" placeholder="Nuevo Email">
+                <input type="password" id="userPassword" name="password" placeholder="Nueva Contraseña">
+                <button type="submit">Actualizar</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function openCreateModal() {
+            document.getElementById('createModal').style.display = 'block';
+        }
+
+        function closeCreateModal() {
+            document.getElementById('createModal').style.display = 'none';
+        }
+
+        function openUpdateModal(id, name, email) {
+            document.getElementById('userId').value = id;
+            document.getElementById('userName').value = name;
+            document.getElementById('userEmail').value = email;
+            document.getElementById('updateModal').style.display = 'block';
+        }
+
+        function closeUpdateModal() {
+            document.getElementById('updateModal').style.display = 'none';
+        }
+
+        function openDeleteModal(id) {
+            document.getElementById('deleteUserId').value = id;
+            document.getElementById('deleteModal').style.display = 'block';
+        }
+
+        function closeDeleteModal() {
+            document.getElementById('deleteModal').style.display = 'none';
+        }
+
+        function createUser(event) {
+            event.preventDefault(); // Evitar que el formulario se envíe automáticamente
+
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            fetch('/crear', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    name: name,
+                    email: email,
+                    password: password
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Usuario creado:', data);
+                closeCreateModal(); // Cerrar el modal después de crear el usuario
+            })
+            .catch(error => {
+                console.error('Error al crear usuario:', error);
+            });
+        }
+
+        function deleteUser() {
+            const userId = document.getElementById('deleteUserId').value;
+
+            fetch(`/eliminar`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    id: userId
+                })
+            })
+            .then(response => {
+                if (response.ok) {
+                    console.log('Usuario eliminado exitosamente');
+                    closeDeleteModal(); // Cerrar modal después de eliminar
+                } else {
+                    console.error('Error al eliminar usuario:', response.statusText);
+                }
+            })
+            .catch(error => {
+                console.error('Error al eliminar usuario:', error);
+            });
+        }
+
+        // Actualizar usuario
+        function updateUser() {
+            const userId = document.getElementById('userId').value;
+            const name = document.getElementById('userName').value;
+            const email = document.getElementById('userEmail').value;
+            const password = document.getElementById('userPassword').value; // Si estás actualizando la contraseña
+
+            fetch(`/actualizar`, {  // Elimina el userId de la URL
+                method: 'PATCH',  // Cambia POST a PATCH
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    id: userId,
+                    name: name,
+                    email: email,
+                    password: password  // Asegúrate de incluir la contraseña aquí si deseas actualizarla
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Usuario actualizado:', data);
+                closeUpdateModal(); // Cerrar modal después de actualizar
+            })
+            .catch(error => {
+                console.error('Error al actualizar usuario:', error);
+            });
+        }
+    </script>
+</body>
+</html>
